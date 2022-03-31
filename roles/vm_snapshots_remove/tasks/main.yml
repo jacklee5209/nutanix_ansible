@@ -29,9 +29,10 @@
 
 - name: Gets VM UUID from its name
   set_fact:
-    vm_uuid: '{{ vms_list.json.entities | json_query(my_query)|first }}'
+    vm_uuid: '{{ vms_list.json.entities | json_query(my_query)|first | default(5) }}'
   vars:
     my_query: "[? name=='{{ inventory_hostname }}'].uuid"
+  register: query_result
 
 - name: Gets a list of VM snapshots
   uri:
@@ -44,6 +45,7 @@
     status_code: 200
   register: existing_snapshots
   delegate_to: localhost
+  when: query_result.ansible_facts['vm_uuid'] != "5"
 
 - name: Deletes all snapshots
   uri:
@@ -55,3 +57,4 @@
     status_code: 201
   loop: '{{ existing_snapshots.json.entities }}'
   delegate_to: localhost
+  when: query_result.ansible_facts['vm_uuid'] != "5"
