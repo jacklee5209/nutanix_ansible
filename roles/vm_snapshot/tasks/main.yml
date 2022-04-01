@@ -79,3 +79,11 @@
   debug:
     msg: "Snapshot creation time : {{ '%Y-%m-%d %H:%M:%S' | strftime((task_status.json.create_time_usecs|string)[:10]) }}"
   when: query_result.ansible_facts['vm_uuid'] != "5"
+  
+- name: Gathering final result
+  lineinfile:
+    state: present
+    dest: /usr/share/ansible/tmp/tmp.txt
+    line: "{{ final_output }}"
+    insertafter: EOF
+  when: final_output is search("Snapshot*")
